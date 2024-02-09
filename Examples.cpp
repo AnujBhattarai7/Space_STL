@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Unordered_Map.h"
+#include "Vector.h"
 #include <unordered_map>
 
 #define _PRINT_(x)              \
@@ -95,16 +96,14 @@ void PrintMemoryMetric()
 
 int main(int argc, char const *argv[])
 {
-    {}
-
 
     {
         SP_STD::Unordered_Map<int, int> _Map;
-        _Map.Add(2, 2);
-    
-        for(auto& i : _Map)
-            _PRINT_(i)
+        _Map[0] = 2;
 
+        for(auto& i : _Map)
+            _PRINT_((const)i)
+        _PRINT_((const)_Map[0])
     }
 
     std::cin.get();

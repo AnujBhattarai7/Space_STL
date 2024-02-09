@@ -1,8 +1,0 @@
-[
-{
-  "directory": "D:/Codes/C++/Space_STL/out/build",
-  "command": "/ucrt64/bin/g++.exe    -g -ID:/Codes/C++/Space_STL/Include/ -o CMakeFiles/Example.dir/D_/Codes/C++/Space_STL/Examples.cpp.o -c D:/Codes/C++/Space_STL/Examples.cpp",
-  "file": "D:/Codes/C++/Space_STL/Examples.cpp",
-  "output": "D:/Codes/C++/Space_STL/out/build/CMakeFiles/Example.dir/D_/Codes/C++/Space_STL/Examples.cpp.o"
-}
-]

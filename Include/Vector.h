@@ -66,7 +66,6 @@ namespace SP_STD
         inline const _T &operator[](int i) const { return _Get(i); }
 
         inline Vector<_T> &operator=(const std::initializer_list<_T> &_D);
-
         // Flushes all elements of the array _V
         void Flush();
 

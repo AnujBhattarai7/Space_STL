@@ -25,10 +25,6 @@ namespace SP_STD
             return _Map[_Find(K)];
         }
 
-        // Adds teh _D to K
-        void Add(const _K &K, const _T &_D);
-        void Add(const _K &K, _T &&_D);
-
         // Checks if K exists in _Key or not
         bool _KeyExist(const _K &K) { return (_Find(K) != -1) ? true : false; }
         // Flushes both the arrays
@@ -179,42 +175,6 @@ namespace SP_STD
 
         _Map = nullptr;
         _Keys = nullptr;
-    }
-
-    template <typename _K, typename _T>
-    inline void Unordered_Map<_K, _T>::Add(const _K &K, const _T &_D)
-    {
-        if (_Size + 1 > _Capacity)
-            _Alloc((_Size + 1) * 1.5);
-
-        int _CN = _Find(K);
-        if (_CN != -1)
-        {
-            _Map[_CN] = std::move(_D);
-            return;
-        }
-
-        _Keys[_Size] = std::move(K);
-        _Map[_Size] = std::move(_D);
-        _Size++;
-    }
-
-    template <typename _K, typename _T>
-    inline void Unordered_Map<_K, _T>::Add(const _K &K, _T &&_D)
-    {
-        if (_Size + 1 > _Capacity)
-            _Alloc((_Size + 1) * 1.5);
-
-        int _CN = _Find(K);
-        if (_CN != -1)
-        {
-            _Map[_CN] = std::move(_D);
-            return;
-        }
-
-        _Keys[_Size] = std::move(K);
-        _Map[_Size] = std::move(_D);
-        _Size++;
     }
 
     template <typename _K, typename _T>
