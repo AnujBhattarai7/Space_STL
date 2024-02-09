@@ -12,14 +12,22 @@ namespace SP_STD
         ~Unordered_Map();
 
         // Getters
-
         const int Size() const { return _Size; }
         const int Capacity() const { return _Capacity; }
+        
+        const _T &Get(const _K &K)
+        {
+            _AuthSize();
+            return _Map[_Find(K)];
+        }
 
         void Flush();
+        // Reserves the given _NC in both Arrays
+        void Reserve(int _NC);
 
         // Operators
         _T &operator[](const _K &K);
+        const _T &operator[](const _K &K) const;
 
     private:
         // The Key array
@@ -46,7 +54,21 @@ namespace SP_STD
     template <typename _K, typename _T>
     inline _T &Unordered_Map<_K, _T>::operator[](const _K &K)
     {
-        return _Map[Find(K)];
+        int _CN = _Find(K);
+        if (_CN != -1)
+        {
+            return _Map[_CN];
+        }
+
+        _Keys[_Size] = K;
+        _Size++;
+        return _Map[_Size - 1];
+    }
+
+    template <typename _K, typename _T>
+    inline const _T &Unordered_Map<_K, _T>::operator[](const _K &K) const
+    {
+        return _Map[_Find(K)];
     }
 
     template <typename _K, typename _T>
@@ -55,19 +77,44 @@ namespace SP_STD
         // for No memory allocated
         if (_Map == nullptr || _Keys == nullptr)
         {
-            _Map = new _T[_NC];
-            _Keys = new _K[_NC];
+            _Map = (_T *)::operator new(_NC * sizeof(_T));
+            _Keys = (_K *)::operator new(_NC * sizeof(_K));
             _Capacity = _NC;
 
             return;
         }
+
+        int _OC = _Capacity;
+        _Capacity = _NC;
+
+        _T *_NewMap = (_T *)::operator new(_Capacity * sizeof(_T));
+        _K *_NewKey = (_K *)::operator new(_Capacity * sizeof(_K));
+
+        // Copies the data into _A
+        for (int i = 0; i < _Size; i++)
+        {
+            _NewKey[i] = std::move(_Keys[i]);
+            _NewMap[i] = std::move(_Map[i]);
+        }
+
+        for (int i = 0; i < _Size; i++)
+        {
+            _Keys[i].~_K();
+            _Map[i].~_T();
+        }
+
+        ::operator delete(_Map, _OC * sizeof(_T));
+        ::operator delete(_Keys, _OC * sizeof(_K));
+
+        _Keys = _NewKey;
+        _Map = _NewMap;
+
+        return;
     }
 
     template <typename _K, typename _T>
     inline int Unordered_Map<_K, _T>::_Find(const _K &K)
     {
-        _AuthSize();
-
         for (int i = 0; i < _Size; i++)
             if (_Keys[i] == K)
                 return i;
@@ -87,10 +134,10 @@ namespace SP_STD
     {
         Flush();
 
-        if(_Map != nullptr)
-            delete[] _Map;
-        if(_Keys != nullptr)
-            delete[] _Keys;
+        if (_Map != nullptr)
+            ::operator delete(_Map, _Capacity * sizeof(_T));
+        if (_Keys != nullptr)
+            ::operator delete(_Keys, _Capacity * sizeof(_K));
 
         _Map = nullptr;
         _Keys = nullptr;
@@ -107,5 +154,12 @@ namespace SP_STD
         }
 
         _Size = 0;
+    }
+
+    template <typename _K, typename _T>
+    inline void Unordered_Map<_K, _T>::Reserve(int _NC)
+    {
+        if (_Capacity < _NC)
+            _Alloc(_NC);
     }
 } // namespace SP_STD
