@@ -1,6 +1,7 @@
 #pragma once
 
 #include <assert.h>
+#include "Iterator.h"
 
 namespace SP_STD
 {
@@ -8,26 +9,41 @@ namespace SP_STD
     class Unordered_Map
     {
     public:
+        using Iterator = _Iterator_Base<_T>;
+
+    public:
         Unordered_Map() {}
         ~Unordered_Map();
 
         // Getters
         const int Size() const { return _Size; }
         const int Capacity() const { return _Capacity; }
-        
+
         const _T &Get(const _K &K)
         {
             _AuthSize();
             return _Map[_Find(K)];
         }
 
+        // Adds teh _D to K
+        void Add(const _K &K, const _T &_D);
+        void Add(const _K &K, _T &&_D);
+
+        // Checks if K exists in _Key or not
+        bool _KeyExist(const _K &K) { return (_Find(K) != -1) ? true : false; }
+        // Flushes both the arrays
         void Flush();
         // Reserves the given _NC in both Arrays
         void Reserve(int _NC);
 
         // Operators
         _T &operator[](const _K &K);
+        _T &operator[](_K &&K);
         const _T &operator[](const _K &K) const;
+
+        // Range based loops
+        Iterator begin() { return _Iterator_Base(_Map); }
+        Iterator end() { return _Iterator_Base(_Map + _Size); }
 
     private:
         // The Key array
@@ -40,6 +56,8 @@ namespace SP_STD
         int _Size = 0;
         // Stores the Capacity of the Maps
         int _Capacity = 0;
+        // Caches teh latest _Find result
+        int _FindCache = 0;
 
         // Allocates memory into _Map and _Keys
         void _Alloc(int _NC);
@@ -54,13 +72,29 @@ namespace SP_STD
     template <typename _K, typename _T>
     inline _T &Unordered_Map<_K, _T>::operator[](const _K &K)
     {
+        if (_Size + 1 > _Capacity)
+            _Alloc((_Size + 1) * 1.5);
+
         int _CN = _Find(K);
         if (_CN != -1)
-        {
             return _Map[_CN];
-        }
 
         _Keys[_Size] = K;
+        _Size++;
+        return _Map[_Size - 1];
+    }
+
+    template <typename _K, typename _T>
+    inline _T &Unordered_Map<_K, _T>::operator[](_K &&K)
+    {
+        if (_Size + 1 > _Capacity)
+            _Alloc((_Size + 1) * 1.5);
+
+        int _CN = _Find(K);
+        if (_CN != -1)
+            return _Map[_CN];
+
+        _Keys[_Size] = std::move(K);
         _Size++;
         return _Map[_Size - 1];
     }
@@ -117,9 +151,13 @@ namespace SP_STD
     {
         for (int i = 0; i < _Size; i++)
             if (_Keys[i] == K)
-                return i;
+            {
+                _FindCache = i;
+                return _FindCache;
+            }
 
-        return -1;
+        _FindCache = -1;
+        return _FindCache;
     }
 
     template <typename _K, typename _T>
@@ -141,6 +179,42 @@ namespace SP_STD
 
         _Map = nullptr;
         _Keys = nullptr;
+    }
+
+    template <typename _K, typename _T>
+    inline void Unordered_Map<_K, _T>::Add(const _K &K, const _T &_D)
+    {
+        if (_Size + 1 > _Capacity)
+            _Alloc((_Size + 1) * 1.5);
+
+        int _CN = _Find(K);
+        if (_CN != -1)
+        {
+            _Map[_CN] = std::move(_D);
+            return;
+        }
+
+        _Keys[_Size] = std::move(K);
+        _Map[_Size] = std::move(_D);
+        _Size++;
+    }
+
+    template <typename _K, typename _T>
+    inline void Unordered_Map<_K, _T>::Add(const _K &K, _T &&_D)
+    {
+        if (_Size + 1 > _Capacity)
+            _Alloc((_Size + 1) * 1.5);
+
+        int _CN = _Find(K);
+        if (_CN != -1)
+        {
+            _Map[_CN] = std::move(_D);
+            return;
+        }
+
+        _Keys[_Size] = std::move(K);
+        _Map[_Size] = std::move(_D);
+        _Size++;
     }
 
     template <typename _K, typename _T>
