@@ -2,8 +2,9 @@
 
 #include <assert.h>
 #include "Iterator.h"
+#include <hashtable.h>
 
-namespace SP_STD
+namespace SP_STL
 {
     template <typename _K, typename _T>
     class Unordered_Map
@@ -146,7 +147,7 @@ namespace SP_STD
     inline int Unordered_Map<_K, _T>::_Find(const _K &K)
     {
         for (int i = 0; i < _Size; i++)
-            if (_Keys[i] == K)
+            if (std::hash<_K>{}(_Keys[i]) == std::hash<_K>{}(K))
             {
                 _FindCache = i;
                 return _FindCache;

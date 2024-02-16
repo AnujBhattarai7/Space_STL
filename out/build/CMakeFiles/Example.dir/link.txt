@@ -1,0 +1,1 @@
+/ucrt64/bin/g++.exe  -g -ID:/Codes/C++/Space_STL/Include/ CMakeFiles/Example.dir/D_/Codes/C++/Space_STL/Examples.cpp.o -o D:/Codes/C++/Space_STL/out/build/bin/Debug/Example.exe  -lstdc++ 

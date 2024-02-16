@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+D:/Codes/C++/Space_STL/Examples.cpp
+iostream
+-
+Unordered_Map.h
+D:/Codes/C++/Space_STL/Unordered_Map.h
+Vector.h
+D:/Codes/C++/Space_STL/Vector.h
+unordered_map
+-
+

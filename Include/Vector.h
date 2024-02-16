@@ -1,6 +1,7 @@
 #pragma once
 
 #include <initializer_list>
+#include <utility>
 #include "Iterator.h"
 
 #define _VEC_INITIAL_SIZE_ 10
@@ -16,9 +17,9 @@
         _PRINT_(x);         \
         exit(EXIT_FAILURE); \
     }
-namespace SP_STD
+namespace SP_STL
 {
-    template <typename _T, int _TS = 0>
+    template <typename _T, int _TS = 1>
     class Vector
     {
         // Comments:
@@ -31,14 +32,7 @@ namespace SP_STD
 
     public:
         Vector(const std::initializer_list<_T> &_D) { *this = _D; }
-
-        Vector(int _NS = _TS, bool _Alloc_ = true)
-        {
-            if (_Alloc_ == true)
-                _Alloc(_NS);
-            else
-                _Alloc(0);
-        }
+        Vector() { _Alloc(1); }
 
         ~Vector()
         {
@@ -56,6 +50,11 @@ namespace SP_STD
         inline _T *Data() const { return _V; }
         inline _T &at(int _i) { return _V[_i]; }
 
+        // Sets the value at index i in _V to V and increases the _Size
+        // If i == _EmptyIndex then no need to move all the other elemetns
+        // else will shift all the other elements ::TODO
+        void Set(int i, const _T &V);
+
         // Copies the _O n times and assigns it
         inline void Assign(int n, const _T &_O);
 
@@ -69,9 +68,6 @@ namespace SP_STD
         // Flushes all elements of the array _V
         void Flush();
 
-        _T &begin() const { return *_V; }
-        _T &end() const { return *_V + Size(); }
-
         // Push_Backes the object to the end of _V by copying
         void Push_Back(const _T &O);
 
@@ -82,14 +78,23 @@ namespace SP_STD
         template <typename... Args>
         _T &Emplace_Back(Args &&...args);
 
+        // Rather than moving creates adds to _V from given args...
+        template <typename... Args>
+        _T &Emplace(int i, Args &&...args);
+
         // Pops the last object in _V
         void Pop_Back();
+        // Pops the i index in _V
+        void Pop(int i) { Erase(i); }
 
         // Removes the given index from _V
         void Erase(int i);
 
         // Removes the given index from s to e in _V
         void Erase(int s, int e);
+
+        // Erase Func for special cases wherer u have to replace an object so dont reduce the size
+        void _Erase(int i, bool _SizeReduce);
 
         // Reserves the given no of size in _V
         void Reserve(int Size);
@@ -132,6 +137,18 @@ namespace SP_STD
         // Allocates memory even if _C is 0
         void _Force_Alloc(int S);
     };
+
+    template <typename _T, int _TS>
+    inline void Vector<_T, _TS>::Set(int i, const _T &V)
+    {
+        if (i == _EmptyIndex)
+        {
+            _V[i] = std::move(V);
+            return;
+        }
+
+        // TODO: implement moving of all the other elements
+    }
 
     template <typename _T, int _TS>
     inline void Vector<_T, _TS>::Assign(int n, const _T &_O)
@@ -189,17 +206,19 @@ namespace SP_STD
     template <typename _T, int _TS>
     inline void Vector<_T, _TS>::Push_Back(const _T &O)
     {
-        if (_S >= _C)
-            _Alloc(_C * _VEC_CAPACITY_SIZE_MULTIPLIER_);
+        if (_S + 1 > _C || _S >= _C)
+            _Alloc(_C * _VEC_CAPACITY_SIZE_MULTIPLIER_ + 1);
+        _S = _S;
 
-        _V[_S++] = std::move(O);
+        _V[_S] = std::move(O);
+        _S++;
     }
 
     template <typename _T, int _TS>
     inline void Vector<_T, _TS>::Push_Back(_T &&O)
     {
-        if (_S > _C)
-            _Alloc(_C * _VEC_CAPACITY_SIZE_MULTIPLIER_);
+        if (_S + 1 > _C || _S >= _C)
+            _Alloc(_C * _VEC_CAPACITY_SIZE_MULTIPLIER_ + 1);
 
         _V[_S++] = std::move(O);
     }
@@ -217,6 +236,7 @@ namespace SP_STD
 
         _V[i].~_T();
         _S--;
+        _EmptyIndex = i;
     }
 
     template <typename _T, int _TS>
@@ -227,6 +247,19 @@ namespace SP_STD
 
         for (int i = s; i < e; i++)
             Erase(i);
+    }
+
+    template <typename _T, int _TS>
+    inline void Vector<_T, _TS>::_Erase(int i, bool _SizeReduce)
+    {
+        if (!_SizeReduce)
+        {
+            Erase(i);
+            return;
+        }
+
+        _AuthIndex(i);
+        _V[i].~_T();
     }
 
     template <typename _T, int _TS>
@@ -310,10 +343,21 @@ namespace SP_STD
     template <typename... Args>
     inline _T &Vector<_T, _TS>::Emplace_Back(Args &&...args)
     {
-        if (_S + 1 > _C)
-            _Alloc(_C * _VEC_CAPACITY_SIZE_MULTIPLIER_);
+        if (_S + 1 > _C || _S >= _C)
+            _Alloc(_C * _VEC_CAPACITY_SIZE_MULTIPLIER_ + 1);
 
         new (&_V[_S]) _T(std::forward<Args>(args)...);
-        return _V[_S++];
+        _S++;
+        return _V[_S-1];
+    }
+
+    template <typename _T, int _TS>
+    template <typename... Args>
+    inline _T &Vector<_T, _TS>::Emplace(int i, Args &&...args)
+    {
+        _AuthIndex(i);
+
+        new (&_V[i]) _T(std::forward<Args>(args)...);
+        return _V[i];
     }
 } // namespace SP_STD

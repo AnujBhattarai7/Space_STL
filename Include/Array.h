@@ -9,7 +9,7 @@
         std::cout << x << "\n"; \
     }
 
-namespace SP_STD
+namespace SP_STL
 {
 
     template <typename _Tp, int _Nm>

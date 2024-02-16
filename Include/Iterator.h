@@ -1,6 +1,6 @@
 #pragma once
 
-namespace SP_STD
+namespace SP_STL
 {
     template <typename _ValueType>
     class _Iterator_Base
